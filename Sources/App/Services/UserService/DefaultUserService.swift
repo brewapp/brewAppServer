@@ -48,7 +48,7 @@ struct DefaultUserService: UserService {
             
             print ("==== before)")
             
-            let aux = RefreshToken(token: refreshToken, userID: try persistedUser.requireID())
+            let aux = RefreshTokenModel(token: refreshToken, userID: try persistedUser.requireID())
             
             print ("==== \(aux)")
             try await aux.save(on: request.db)

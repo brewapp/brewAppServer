@@ -49,7 +49,7 @@ public func configure(_ app: Application) async throws {
     }
 
     app.migrations.add(User.Migration())
-    app.migrations.add(RefreshToken.Migration())
+    app.migrations.add(RefreshTokenModel.Migration())
 
     app.views.use(.leaf)
 

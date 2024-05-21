@@ -9,7 +9,7 @@ import Fluent
 import FluentPostgresDriver
 import Vapor
 
-final class RefreshToken: Model, Content {
+final class RefreshTokenModel: Model, Content {
     
     fileprivate enum Constants {
         static let refreshTokenTime: TimeInterval = 60 * 24 * 60 * 60

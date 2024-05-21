@@ -8,7 +8,7 @@
 import Fluent
 import Vapor
 
-extension RefreshToken {
+extension RefreshTokenModel {
     struct Migration: AsyncMigration {
         var name: String { "RefreshToken" }
 
