@@ -6,16 +6,7 @@ func routes(_ app: Application) throws {
         try await req.view.render("index", ["title": "Hello Vapor!"])
     }
 
-    
-    let protected = app.grouped(UserAuthenticator())
-    
-    protected.get("hello") { req async throws in
-        
-        guard req.auth.has(User.self) else {
-            throw Abort(.unauthorized)
-        }
-        return "Hello, world!"
-    }
-
-    try app.register(collection: TodoController())
+    // MARK: - UserController
+    let userController = UsersController(userService: ProjectServices.userService)
+    try app.register(collection: userController)
 }

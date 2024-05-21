@@ -3,9 +3,19 @@ import Fluent
 import FluentPostgresDriver
 import Leaf
 import Vapor
+import JWT
 
 public enum APIError: Error {
     case credentialsDB
+}
+
+extension String {
+    var bytes: [UInt8] { .init(self.utf8) }
+}
+
+extension JWKIdentifier: @unchecked Sendable {
+    static let `public` = JWKIdentifier(string: "public")
+    static let `private` = JWKIdentifier(string: "private")
 }
 
 // configures your application
@@ -13,29 +23,33 @@ public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     
+    
+    // JWT
+    let privateKey = try String(contentsOfFile: app.directory.workingDirectory + "jwtRS256.key")
+    let privateSigner = try JWTSigner.rs256(key: .private(pem: privateKey.bytes))
+    
+    let publicKey = try String(contentsOfFile: app.directory.workingDirectory + "jwtRS256.key.pub")
+    let publicSigner = try JWTSigner.rs256(key: .public(pem: publicKey.bytes))
+    
+    app.jwt.signers.use(privateSigner, kid: .private)
+    app.jwt.signers.use(publicSigner, kid: .public, isDefault: true)
+    
+    // DATABASE
     if let databaseURL = Environment.get("DATABASE_URL") {
         var tlsConfig: TLSConfiguration = .makeClientConfiguration()
         tlsConfig.certificateVerification = .none
         let nioSSLContext = try NIOSSLContext(configuration: tlsConfig)
-
+        
         var postgresConfig = try SQLPostgresConfiguration(url: databaseURL)
         postgresConfig.coreConfiguration.tls = .require(nioSSLContext)
-
+        
         app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     } else {
         throw APIError.credentialsDB
     }
-    
-//    app.databases.use(.postgres(configuration: .init(
-//        hostname: "c7u1tn6bvvsodf.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com",
-//        port: SQLPostgresConfiguration.ianaPortNumber,
-//        username: "u5pmff728aifiv",
-//        password: "pc2d9b19f5b41ecc6583732fdbaeb12896be95b0a2c14e88993316c06771a1553",
-//        database: "d41nojgan65gpk",
-//        tls: .prefer(try .init(configuration: .clientDefault)))
-//    ), as: .psql )
 
-    app.migrations.add(CreateStyle())
+    app.migrations.add(User.Migration())
+    app.migrations.add(RefreshToken.Migration())
 
     app.views.use(.leaf)
 

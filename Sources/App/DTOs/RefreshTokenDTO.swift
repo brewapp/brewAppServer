@@ -1,8 +1,12 @@
 //
-//  File.swift
-//  
+//  RefreshTokenDto.swift
+//
 //
 //  Created by Aike Fernández Roza on 21/5/24.
 //
 
-import Foundation
+import Vapor
+
+struct RefreshTokenDto: Content, Sendable {
+    let refreshToken: String
+}
